@@ -1,44 +1,41 @@
-'use strict'
+const fp = require('fastify-plugin');
 
-const fp = require('fastify-plugin')
+function paramSchemaValidationPlugin(fastify, options, next) {
+  // Check if the plugin should be active based on options
+  const isEnabled = options.exposeParamSchemaValidation !== false;
 
-function plugin (fastify, options, next) {
-  fastify.addHook('onRoute', function (routeOptions) {
-    // Check if enabled via plugin options OR locally on the route itself
-    const isFeatureEnabled = options.exposeParamSchemaValidation === true ||
-                             routeOptions.exposeParamSchemaValidation === true
+  if (isEnabled) {
+    fastify.addHook('onRoute', (routeOptions) => {
 
-    if (isFeatureEnabled && routeOptions.schema && routeOptions.schema.params && routeOptions.schema.params.properties) {
-      const pathParams = []
-      const routeUrl = routeOptions.url || routeOptions.path || ''
-      const segments = routeUrl.split('/')
+      const urlParams = routeOptions.url.match(/:[a-zA-Z0-9_]+/g) || [];
+      const cleanUrlParams = urlParams.map(p => p.replace(':', ''));
 
-      for (let i = 0; i < segments.length; i++) {
-        const segment = segments[i]
-        if (segment.charCodeAt(0) === 58 && segment.length > 1) {
-          const parenIdx = segment.indexOf('(')
-          const paramName = parenIdx !== -1 ? segment.slice(1, parenIdx) : segment.slice(1)
-          pathParams.push(paramName)
-        }
+      if (cleanUrlParams.length === 0) return;
+
+      if (!routeOptions.schema || !routeOptions.schema.params || !routeOptions.schema.params.properties) {
+        throw new Error(
+          `FST_ERR_SCH_VALIDATION_BUILD: The route '${routeOptions.url}' defines parameters ${JSON.stringify(cleanUrlParams)} but is completely missing a validation schema matching them.`
+        );
       }
 
-      const schemaParams = Object.keys(routeOptions.schema.params.properties)
+      // 3. Extract the defined keys from the schema properties
+      const schemaParams = Object.keys(routeOptions.schema.params.properties);
 
-      for (const pathParam of pathParams) {
-        if (!schemaParams.includes(pathParam)) {
-          const error = new Error(`The route has a parameter '${pathParam}' that is not defined in the validation schema.`)
-          error.code = 'FST_ERR_SCH_VALIDATION_BUILD'
-          error.statusCode = 400
-          throw error
+      // 4. Verify each URL parameter exists in the schema properties
+      for (const param of cleanUrlParams) {
+        if (!schemaParams.includes(param)) {
+          throw new Error(
+            `FST_ERR_SCH_VALIDATION_BUILD: The route '${routeOptions.url}' has a parameter '${param}' that is not defined in the validation schema.`
+          );
         }
       }
-    }
-  })
+    });
+  }
 
-  next()
+  next();
 }
 
-module.exports = fp(plugin, {
+module.exports = fp(paramSchemaValidationPlugin, {
   fastify: '5.x',
   name: 'fastify-param-schema-validation'
-})
+});
