@@ -2,11 +2,20 @@
 
 # 🚀 fastify-param-schema-validation
 
-[![NPM Version](https://img.shields.io/npm/v/fastify-param-schema-validation.svg?style=flat-square)](https://www.npmjs.com/package/fastify-param-schema-validation)
-[![Fastify Version](https://img.shields.io/badge/fastify-%5E5.0.0-black?style=flat-square)](https://www.fastify.io/)
-[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg?style=flat-square)](https://opensource.org/licenses/ISC)
+### ✨ Enforce structural safety in your Fastify routes at boot time ✨
 
-**A lightweight, zero-overhead Fastify plugin that strictly enforces parameter definitions in your route validation schemas.**
+[![NPM Version](https://img.shields.io/npm/v/fastify-param-schema-validation.svg?style=flat-square&color=cb3837)](https://www.npmjs.com/package/fastify-param-schema-validation)
+[![Fastify Version](https://img.shields.io/badge/fastify-%5E5.0.0-black?style=flat-square&logo=fastify)](https://www.fastify.io/)
+[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg?style=flat-square)](https://opensource.org/licenses/ISC)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](#-contributing)
+
+<p align="center">
+  A ultra-lightweight, zero-overhead ecosystem plugin that ensures your URL parameters never drift away from your validation schemas.
+</p>
+
+---
+
+[🤔 The Problem](#-the-problem) • [💡 The Solution](#-the-solution) • [🎬 Demo](#-demo) • [📦 Installation](#-installation) • [🚀 Usage](#-usage) • [⚡ Performance](#-performance)
 
 ---
 
@@ -14,43 +23,49 @@
 
 ## 🤔 The Problem
 
-When building APIs with Fastify, it is dangerously easy to define a URL parameter in your path (e.g., `/user/:id`) but forget to include it in your route's validation `schema`.
-
-By default, Fastify will boot up just fine, but your application will silently lack validation for that parameter, potentially opening you up to bugs or security vulnerabilities.
-
-## 💡 The Solution
-
-`fastify-param-schema-validation` hooks into Fastify's boot sequence. If a route has a URL parameter that is **missing** from its validation schema, this plugin catches it instantly and crashes the server with a descriptive `FST_ERR_SCH_VALIDATION_BUILD` error.
-
-**Fail fast in development, so you never deploy a broken schema to production.**
-
----
-
-## 🎬 Demo
+When building high-performance REST APIs with Fastify, it is dangerously easy to define a URL parameter in your path string (e.g., `/api/user/:id`) but accidentally forget to map it inside your route's validation `schema`.
 
 ```text
-Error: The route has a parameter 'missingId' that is not defined in the validation schema.
+       Path definition ──>  /user/:id
+                              │
+               Missing validation schema mapping!
+                              ▼
+       Schema definition ─> { params: { wrongName: { type: 'string' } } }
+By default, Fastify boots up without complaining, leaving that parameter completely unvalidated at runtime. This can lead to unexpected bugs, unhandled exceptions, or silent security vulnerabilities in production.
+
+💡 The Solution
+fastify-param-schema-validation hooks natively into Fastify's initial boot sequence. If a route defines a URL parameter that is missing from its accompanying validation structure, this plugin catches it immediately and crashes the server using a precise, standardized FST_ERR_SCH_VALIDATION_BUILD exception.
+
+🎯 Fail fast during local development and CI pipelines so a broken schema never hits your production environment.
+
+🎬 Demo
+When a misconfigured schema is detected, your process terminates immediately with an explicit lifecycle error:
+
+Code snippet
+[1;31mError: The route has a parameter 'missingId' that is not defined in the validation schema.[0m
     code: 'FST_ERR_SCH_VALIDATION_BUILD',
     statusCode: 400
 📦 Installation
+Install the package via your preferred package manager:
+
 Bash
 npm install fastify-param-schema-validation
 🚀 Usage
-Register the plugin and pass the exposeParamSchemaValidation: true option. You can enable this globally for all routes, or locally per-route.
+Register the plugin and activate it using the exposeParamSchemaValidation: true option. You can apply validation enforcement globally across all routes or selectively on single endpoints.
 
 1. Global Enforcement (Recommended)
-This will check every single route registered to your Fastify instance.
+This strategy automatically scans every single route instance mounted onto your Fastify tree.
 
 JavaScript
 const fastify = require('fastify')({ logger: true })
 const paramValidationPlugin = require('fastify-param-schema-validation')
 
-// Register globally
+// Register the plugin globally
 fastify.register(paramValidationPlugin, {
   exposeParamSchemaValidation: true
 })
 
-// ❌ BAD: Server will crash on boot because ':id' is missing from schema.params
+// ❌ BAD: This will trigger a boot-time crash because ':id' is missing in schema properties
 fastify.get('/user/:id', {
   schema: {
     params: {
@@ -64,7 +79,7 @@ fastify.get('/user/:id', {
   return { status: 'ok' }
 })
 
-// ✅ GOOD: Server boots normally
+// ✅ GOOD: This compiles perfectly
 fastify.get('/post/:postId', {
   schema: {
     params: {
@@ -80,12 +95,13 @@ fastify.get('/post/:postId', {
 
 fastify.listen({ port: 3000 })
 2. Route-Level Enforcement
-If you only want to enforce strict parameter checks on specific routes, omit the option during registration and add it directly to the route options.
+If you need to opt specific routes into validation parsing while keeping others untouched, declare the option directly on individual route contexts.
 
 JavaScript
+const fastify = require('fastify')()
 fastify.register(require('fastify-param-schema-validation'))
 
-// This specific route is now protected
+// This specific route will run enforcement checks
 fastify.get('/secure/:token', {
   exposeParamSchemaValidation: true,
   schema: {
@@ -96,24 +112,28 @@ fastify.get('/secure/:token', {
       }
     }
   }
-}, async (req, reply) => { /* ... */ })
+}, async (request, reply) => {
+  return { status: 'secure' }
+})
 ⚡ Performance
-This plugin was designed with Fastify's core philosophy in mind: Zero Overhead.
+This plugin strictly honors Fastify's primary core principle: Zero Runtime Overhead.
 
-The validation logic runs entirely inside the synchronous onRoute hook. This means it only executes once during the initial server boot sequence. It does not run during HTTP requests, adding exactly 0ms of overhead to your API response times.
+Boot-only Execution: The URL token compilation and matching engine executes entirely inside the synchronous onRoute hook.
+
+0ms Latency Impact: Once the server lifecycle switches to the listening state, the execution pathway is completely bypasses. It adds exactly 0ms of overhead to incoming runtime HTTP requests.
 
 🤝 Contributing
-Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
+Contributions, feature ideas, and issue tracking are highly encouraged!
 
-Fork the project.
+Fork the project repository.
 
-Create your feature branch (git checkout -b feat/AmazingFeature).
+Spin up your custom feature branch (git checkout -b feat/AmazingFeature).
 
-Commit your changes (git commit -m 'feat: Add some AmazingFeature').
+Commit your atomic enhancements (git commit -m 'feat: Add some AmazingFeature').
 
-Push to the branch (git push origin feat/AmazingFeature).
+Push up to your fork branch (git push origin feat/AmazingFeature).
 
-Open a Pull Request.
+File a structured Pull Request.
 
 📝 License
-This project is ISC licensed.
+Distributed under the ISC License.

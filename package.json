@@ -1,13 +1,21 @@
 {
   "name": "fastify-param-schema-validation",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.0.1",
+  "description": "Strictly enforces URL parameter definitions in Fastify route validation schemas to catch missing parameters during server boot.",
   "main": "index.js",
   "scripts": {
     "test": "node --test test.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "fastify",
+    "fastify-plugin",
+    "schema",
+    "validation",
+    "params",
+    "parameter",
+    "strict"
+  ],
+  "author": "Vansh Rana",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {

@@ -34,8 +34,6 @@ test('fastify-param-schema-validation', async t => {
     const fastify = Fastify()
     await fastify.register(plugin, { exposeParamSchemaValidation: true })
 
-    // Wrap the fastify.get call directly inside assert.throws
-    // because the onRoute hook fires synchronously right here!
     assert.throws(
       () => {
         fastify.get('/broken/:missingId', {
@@ -52,7 +50,6 @@ test('fastify-param-schema-validation', async t => {
         })
       },
       (err) => {
-        // Verify it's the exact error code your plugin throws
         return err.code === 'FST_ERR_SCH_VALIDATION_BUILD'
       }
     )
@@ -62,7 +59,6 @@ test('fastify-param-schema-validation', async t => {
 
   await t.test('supports path parameters with regex parentheses', async () => {
     const fastify = Fastify()
-    // Pass the option directly to the plugin here:
     await fastify.register(plugin, { exposeParamSchemaValidation: true })
 
     fastify.get('/regex/:id(\\d+)', {
