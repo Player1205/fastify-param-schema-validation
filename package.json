@@ -1,0 +1,17 @@
+{
+  "name": "fastify-param-schema-validation",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "fastify": "^5.8.5",
+    "fastify-plugin": "^5.1.0"
+  }
+}
