@@ -1,6 +1,3 @@
-Here is the complete README for your Fastify plugin. You can grab the entire file using the copy button in the top right corner of the block below:
-
-```markdown
 <div align="center">
 
   <img src="https://via.placeholder.com/120/000000/FFFFFF?text=F/P" alt="Fastify Param Schema Validation Logo" width="100" height="100" style="border-radius: 20px;" />
