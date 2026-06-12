@@ -1,6 +1,5 @@
 <div align="center">
 
-  <img src="https://via.placeholder.com/120/000000/FFFFFF?text=F/P" alt="Fastify Param Schema Validation Logo" width="100" height="100" style="border-radius: 20px;" />
 
   # 🚀 fastify-param-schema-validation
   **Boot-time structural integrity for Fastify route parameters.**
@@ -14,7 +13,6 @@
 
   <br />
 
-  <img src="https://via.placeholder.com/800x300/1E1E1E/FF5555?text=[+INSERT+TERMINAL+CRASH+GIF+HERE+]" alt="Failing Fast Demo" style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
 
 </div>
 
